@@ -15,7 +15,8 @@ func New(repository *repository.Repository) *Service {
 	}
 }
 
-func (service *Service) CreateCountry(request *dto.CountryRequest) {
+func (service *Service) CreateCountry(request *dto.CountryRequest) dto.CountryResponse {
 	model := request.ToModel()
 	service.repository.Save(model)
+	return dto.NewCountryResponse(model)
 }

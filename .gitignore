@@ -1,3 +1,11 @@
+# VSCODE
 .vscode/
+
+# BINARIES
 bin/
+
+# DOCKER VOLUMES
 docker/pgdata
+
+# VENDOR
+vendor/

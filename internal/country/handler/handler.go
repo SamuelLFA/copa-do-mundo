@@ -29,14 +29,18 @@ func New(service *service.Service) *Handler {
 // @Router      /country [post]
 func (h *Handler) CreateCountry(w http.ResponseWriter, r *http.Request) {
 	var request dto.CountryRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+	if err := dto.ValidateInput(r.Body, &request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	createCountry(&request, *h.service)
+	response := createCountry(&request, *h.service)
+	text, _ := json.Marshal(response)
+	w.WriteHeader(http.StatusCreated)
+	w.Write(text)
 }
 
-func createCountry(request *dto.CountryRequest, service service.Service) {
-	service.CreateCountry(request)
+func createCountry(request *dto.CountryRequest, service service.Service) dto.CountryResponse {
+	return service.CreateCountry(request)
 }
