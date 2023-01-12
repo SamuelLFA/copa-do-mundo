@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/samuellfa/copa-do-mundo-golang/internal/shared"
 )
 
 var validate = validator.New()
@@ -30,7 +31,10 @@ func ValidateInput[T any](body io.Reader, request *T) error {
 			})
 		}
 		json, _ := json.Marshal(errors)
-		return fmt.Errorf(string(json))
+		return &shared.RequestError{
+			StatusCode: 400,
+			Err:        fmt.Errorf(string(json)),
+		}
 	}
 
 	return nil

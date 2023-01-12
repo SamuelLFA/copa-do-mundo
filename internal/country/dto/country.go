@@ -20,8 +20,8 @@ type CountryResponse struct {
 	Name string    `json:"name"`
 }
 
-func NewCountryResponse(model *model.Country) CountryResponse {
-	return CountryResponse{
+func NewCountryResponse(model *model.Country) *CountryResponse {
+	return &CountryResponse{
 		Id:   model.ID,
 		Name: model.Name,
 	}

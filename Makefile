@@ -27,3 +27,7 @@ run:
 .PHONY: swagger
 swagger:
 	swag init -g cmd/app/main.go
+
+.PHONY: docker
+docker:
+	docker-compose -f docker/docker-compose.yaml up -d

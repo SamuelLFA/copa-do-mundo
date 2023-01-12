@@ -9,3 +9,6 @@ docker/pgdata
 
 # VENDOR
 vendor/
+
+# DEBUG
+__debug_bin

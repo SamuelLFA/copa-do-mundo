@@ -6,6 +6,7 @@ import (
 
 	"github.com/samuellfa/copa-do-mundo-golang/internal/country/dto"
 	"github.com/samuellfa/copa-do-mundo-golang/internal/country/service"
+	"github.com/samuellfa/copa-do-mundo-golang/internal/shared"
 )
 
 type Handler struct {
@@ -30,17 +31,24 @@ func New(service *service.Service) *Handler {
 func (h *Handler) CreateCountry(w http.ResponseWriter, r *http.Request) {
 	var request dto.CountryRequest
 	if err := dto.ValidateInput(r.Body, &request); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(err.Error()))
+		customError := err.(*shared.RequestError)
+		w.WriteHeader(customError.StatusCode)
+		w.Write([]byte(customError.Err.Error()))
 		return
 	}
 
-	response := createCountry(&request, *h.service)
+	response, err := createCountry(&request, *h.service)
+	if err != nil {
+		customError := err.(*shared.RequestError)
+		w.WriteHeader(customError.StatusCode)
+		w.Write([]byte(customError.Err.Error()))
+		return
+	}
 	text, _ := json.Marshal(response)
 	w.WriteHeader(http.StatusCreated)
 	w.Write(text)
 }
 
-func createCountry(request *dto.CountryRequest, service service.Service) dto.CountryResponse {
+func createCountry(request *dto.CountryRequest, service service.Service) (*dto.CountryResponse, error) {
 	return service.CreateCountry(request)
 }
