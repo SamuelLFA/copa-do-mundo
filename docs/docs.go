@@ -26,6 +26,39 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/country": {
+            "get": {
+                "description": "Endpoint to retrieve a country by name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get country by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Country name",
+                        "name": "country",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CountryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Endpoint to create a new country",
                 "consumes": [
@@ -42,7 +75,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.CountryRequest"
+                            "$ref": "#/definitions/dto.CountryRequest"
                         }
                     }
                 ],
@@ -50,7 +83,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.CountryResponse"
                         }
                     },
                     "400": {
@@ -58,9 +91,38 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                }
+            }
+        },
+        "/country/{id}": {
+            "get": {
+                "description": "Endpoint to retrieve a country by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get country by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Country ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CountryResponse"
+                        }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -70,10 +132,27 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.CountryRequest": {
+        "dto.CountryRequest": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
+                    "description": "Name of the country\n\nrequired: true",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.CountryResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "The ID of the country\n\nexample: \"123e4567-e89b-12d3-a456-426614174000\"",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "The name of the country\n\nexample: \"Brazil\"",
                     "type": "string"
                 }
             }

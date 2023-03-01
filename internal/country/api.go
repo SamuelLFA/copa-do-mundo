@@ -39,4 +39,6 @@ func setRoutes(handler *handler.Handler, router *mux.Router) {
 	r := router.PathPrefix("/v1").Subrouter()
 
 	r.HandleFunc("/country", handler.CreateCountry).Methods("POST")
+	r.HandleFunc("/country/{id}", handler.GetCountryById).Methods("GET")
+	r.HandleFunc("/country", handler.GetCountryByName).Methods("GET")
 }

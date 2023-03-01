@@ -11,12 +11,14 @@ import (
 
 var validate = validator.New()
 
+// ValidationError is the response sent if validation find any error
 type ValidationError struct {
-	Field   string
-	Message string
+	Field   string `json:"field"`
+	Message string `json:"error"`
 }
 
-func ValidateInput[T any](body io.Reader, request *T) error {
+// ValidateInput validate the input of the request
+func ValidateInput(body io.Reader, request interface{}) error {
 	if err := json.NewDecoder(body).Decode(request); err != nil {
 		return err
 	}
@@ -27,7 +29,7 @@ func ValidateInput[T any](body io.Reader, request *T) error {
 		for _, validationError := range validationErrors {
 			errors = append(errors, ValidationError{
 				Field:   validationError.Field(),
-				Message: validationError.ActualTag(),
+				Message: validationError.Tag(),
 			})
 		}
 		json, _ := json.Marshal(errors)

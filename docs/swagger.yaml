@@ -1,8 +1,29 @@
 basePath: /v1
 definitions:
-  handler.CountryRequest:
+  dto.CountryRequest:
     properties:
       name:
+        description: |-
+          Name of the country
+
+          required: true
+        type: string
+    required:
+    - name
+    type: object
+  dto.CountryResponse:
+    properties:
+      id:
+        description: |-
+          The ID of the country
+
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        type: string
+      name:
+        description: |-
+          The name of the country
+
+          example: "Brazil"
         type: string
     type: object
 host: localhost:3333
@@ -20,6 +41,28 @@ info:
   version: "1.0"
 paths:
   /country:
+    get:
+      consumes:
+      - application/json
+      description: Endpoint to retrieve a country by name
+      parameters:
+      - description: Country name
+        in: query
+        name: country
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CountryResponse'
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Get country by name
     post:
       consumes:
       - application/json
@@ -30,21 +73,40 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/handler.CountryRequest'
+          $ref: '#/definitions/dto.CountryRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            type: string
+            $ref: '#/definitions/dto.CountryResponse'
         "400":
           description: Bad Request
           schema:
             type: string
-        "500":
-          description: Internal Server Error
+      summary: Process a new country
+  /country/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Endpoint to retrieve a country by ID
+      parameters:
+      - description: Country ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.CountryResponse'
+        "404":
+          description: Not Found
           schema:
             type: string
-      summary: Process a new country
+      summary: Get country by ID
 swagger: "2.0"

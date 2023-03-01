@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/samuellfa/copa-do-mundo-golang/internal/country/model"
@@ -24,21 +24,30 @@ func (repository *Repository) Save(model *model.Country) error {
 	if result := repository.db.Create(model); result.Error != nil {
 		return &shared.RequestError{
 			StatusCode: 409,
-			Err:        fmt.Errorf("error when save country"),
+			Err:        errors.New("error when save country"),
 		}
 	}
 	return nil
 }
 
-func (repository *Repository) GetByName(countryToSave *model.Country) error {
-	where := model.Country{Name: countryToSave.Name}
-	var countryWithSameName model.Country
-	repository.db.First(&countryWithSameName, where)
-	if countryWithSameName.ID != uuid.Nil {
-		return &shared.RequestError{
-			StatusCode: 409,
-			Err:        fmt.Errorf("country name already registered"),
+func (repository *Repository) GetByName(name string) (*model.Country, error) {
+	var country model.Country
+	if result := repository.db.Where("name = ?", name).First(&country); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
 		}
+		return nil, errors.New("error when getting country")
 	}
-	return nil
+	return &country, nil
+}
+
+func (repository *Repository) GetById(id uuid.UUID) (*model.Country, error) {
+	var country model.Country
+	if result := repository.db.First(&country, id); result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, errors.New("error when getting country")
+	}
+	return &country, nil
 }
