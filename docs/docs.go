@@ -25,30 +25,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/country": {
+        "/countries": {
             "get": {
-                "description": "Endpoint to retrieve a country by name",
+                "description": "Endpoint to retrieve all countries",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get country by name",
+                "summary": "Get all countries",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Country name",
-                        "name": "country",
-                        "in": "query",
-                        "required": true
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of countries per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.CountryResponse"
+                            "$ref": "#/definitions/dto.CountriesWithPagination"
                         }
                     },
                     "404": {
@@ -95,7 +100,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/country/{id}": {
+        "/countries/{id}": {
             "get": {
                 "description": "Endpoint to retrieve a country by ID",
                 "consumes": [
@@ -132,6 +137,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CountriesWithPagination": {
+            "type": "object",
+            "properties": {
+                "countries": {
+                    "description": "Countries is the list of countries.\n\nrequired: true",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.CountryResponse"
+                    }
+                },
+                "limit": {
+                    "description": "Limit is the number of items per page.\n\nrequired: true",
+                    "type": "integer"
+                },
+                "page": {
+                    "description": "Page is the page number.\n\nrequired: true",
+                    "type": "integer"
+                }
+            }
+        },
         "dto.CountryRequest": {
             "type": "object",
             "required": [

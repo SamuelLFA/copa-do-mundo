@@ -30,18 +30,22 @@ func (service *Service) CreateCountry(request *dto.CountryRequest) (*dto.Country
 	return dto.NewCountryResponse(model), err
 }
 
-func (service *Service) GetCountryByName(name string) (*dto.CountryResponse, error) {
-	model, err := service.repository.GetByName(name)
-	if err != nil || model == nil {
-		return nil, err
-	}
-	return dto.NewCountryResponse(model), nil
-}
-
 func (service *Service) GetCountryById(id uuid.UUID) (*dto.CountryResponse, error) {
 	model, err := service.repository.GetById(id)
 	if err != nil || model == nil {
 		return nil, err
 	}
 	return dto.NewCountryResponse(model), nil
+}
+
+func (service *Service) GetAllCountries(page int, limit int) ([]dto.CountryResponse, error) {
+	models, err := service.repository.GetAllCountries(page, limit)
+	if err != nil {
+		return nil, err
+	}
+	countries := make([]dto.CountryResponse, len(models))
+	for i, model := range models {
+		countries[i] = *dto.NewCountryResponse(&model)
+	}
+	return countries, nil
 }

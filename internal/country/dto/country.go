@@ -39,3 +39,22 @@ func NewCountryResponse(model *model.Country) *CountryResponse {
 		Name: model.Name,
 	}
 }
+
+// CountriesWithPagination represents a paginated list of countries.
+// swagger:response countriesWithPaginationResponse
+type CountriesWithPagination struct {
+	// Countries is the list of countries.
+	//
+	// required: true
+	Countries []CountryResponse `json:"countries"`
+
+	// Page is the page number.
+	//
+	// required: true
+	Page int `json:"page"`
+
+	// Limit is the number of items per page.
+	//
+	// required: true
+	Limit int `json:"limit"`
+}

@@ -1,5 +1,28 @@
 basePath: /v1
 definitions:
+  dto.CountriesWithPagination:
+    properties:
+      countries:
+        description: |-
+          Countries is the list of countries.
+
+          required: true
+        items:
+          $ref: '#/definitions/dto.CountryResponse'
+        type: array
+      limit:
+        description: |-
+          Limit is the number of items per page.
+
+          required: true
+        type: integer
+      page:
+        description: |-
+          Page is the page number.
+
+          required: true
+        type: integer
+    type: object
   dto.CountryRequest:
     properties:
       name:
@@ -40,29 +63,32 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /country:
+  /countries:
     get:
       consumes:
       - application/json
-      description: Endpoint to retrieve a country by name
+      description: Endpoint to retrieve all countries
       parameters:
-      - description: Country name
+      - description: Page number
         in: query
-        name: country
-        required: true
-        type: string
+        name: page
+        type: integer
+      - description: Number of countries per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.CountryResponse'
+            $ref: '#/definitions/dto.CountriesWithPagination'
         "404":
           description: Not Found
           schema:
             type: string
-      summary: Get country by name
+      summary: Get all countries
     post:
       consumes:
       - application/json
@@ -86,7 +112,7 @@ paths:
           schema:
             type: string
       summary: Process a new country
-  /country/{id}:
+  /countries/{id}:
     get:
       consumes:
       - application/json

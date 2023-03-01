@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
@@ -29,7 +30,7 @@ func New(service *service.Service) *Handler {
 // @Param       body body     dto.CountryRequest true "Country request payload"
 // @Success     201  {object} dto.CountryResponse
 // @Success     400  {object} string
-// @Router      /country [post]
+// @Router      /countries [post]
 func (h *Handler) CreateCountry(w http.ResponseWriter, r *http.Request) {
 	var request dto.CountryRequest
 	if err := dto.ValidateInput(r.Body, &request); err != nil {
@@ -51,47 +52,13 @@ func (h *Handler) CreateCountry(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("internal server error"))
 		return
 	}
-	text, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write(text)
+	json.NewEncoder(w).Encode(response)
 }
 
 func createCountry(request *dto.CountryRequest, service service.Service) (*dto.CountryResponse, error) {
 	return service.CreateCountry(request)
-}
-
-// GetCountryByName 	godoc
-// @Summary     Get country by name
-// @Description Endpoint to retrieve a country by name
-// @Accept      json
-// @Produce     json
-// @Param       country query     string  true    "Country name"
-// @Success     200  {object} dto.CountryResponse
-// @Success     404  {object} string
-// @Router      /country [get]
-func (h *Handler) GetCountryByName(w http.ResponseWriter, r *http.Request) {
-	countryName := r.URL.Query().Get("country")
-
-	response, err := getCountryByName(countryName, *h.service)
-	if response == nil {
-		w.WriteHeader(404)
-		w.Write([]byte("not found"))
-		return
-	}
-
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte("internal server error"))
-		return
-	}
-
-	text, _ := json.Marshal(response)
-	w.WriteHeader(http.StatusOK)
-	w.Write(text)
-}
-
-func getCountryByName(name string, service service.Service) (*dto.CountryResponse, error) {
-	return service.GetCountryByName(name)
 }
 
 // GetCountryById   godoc
@@ -102,7 +69,7 @@ func getCountryByName(name string, service service.Service) (*dto.CountryRespons
 // @Param       id path     string  true    "Country ID"
 // @Success     200  {object} dto.CountryResponse
 // @Success     404  {object} string
-// @Router      /country/{id} [get]
+// @Router      /countries/{id} [get]
 func (h *Handler) GetCountryById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -116,22 +83,76 @@ func (h *Handler) GetCountryById(w http.ResponseWriter, r *http.Request) {
 
 	response, err := getCountryById(countryID, *h.service)
 	if response == nil {
-		w.WriteHeader(404)
+		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("not found"))
 		return
 	}
 
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("internal server error"))
 		return
 	}
 
-	text, _ := json.Marshal(response)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(text)
+	json.NewEncoder(w).Encode(response)
 }
 
 func getCountryById(id uuid.UUID, service service.Service) (*dto.CountryResponse, error) {
 	return service.GetCountryById(id)
+}
+
+// GetAllCountries godoc
+// @Summary     Get all countries
+// @Description Endpoint to retrieve all countries
+// @Accept      json
+// @Produce     json
+// @Param       page query     int     false   "Page number"
+// @Param       limit query    int     false   "Number of countries per page"
+// @Success     200  {object}  dto.CountriesWithPagination
+// @Success     404  {object}  string
+// @Router      /countries [get]
+func (h *Handler) GetAllCountries(w http.ResponseWriter, r *http.Request) {
+	pageNumber, limit := parsePaginationParams(r)
+
+	countries, err := h.service.GetAllCountries(pageNumber, limit)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("internal server error"))
+		return
+	}
+
+	if len(countries) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("not found"))
+		return
+	}
+
+	response := dto.CountriesWithPagination{
+		Countries: countries,
+		Page:      pageNumber,
+		Limit:     limit,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+}
+
+func parsePaginationParams(r *http.Request) (pageNumber int, limit int) {
+	page := r.URL.Query().Get("page")
+	limitParam := r.URL.Query().Get("limit")
+
+	pageNumber, _ = strconv.Atoi(page)
+	if pageNumber <= 0 {
+		pageNumber = 1
+	}
+
+	limit, _ = strconv.Atoi(limitParam)
+	if limit <= 0 {
+		limit = 10
+	}
+
+	return pageNumber, limit
 }
